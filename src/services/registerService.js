@@ -53,7 +53,7 @@ export function updateGoal({ objetivo }) {
  */
 export function updatePreferences({ preferencias, alergias }) {
   // leemos antes el perfil, o bien enviamos sólo los campos que ocupen preferences   
-  return API.put('/usuarios/perfil', { preferencias, alergias })
+  return API.put('/usuarios/perfil/preferencias', { preferencias, alergias })
     .then(res => res.data)
 }
 
@@ -73,4 +73,10 @@ export function checkProfileComplete() {
 export function fetchFullProfile() {
   return API.get('/usuarios/perfil')
     .then(res => res.data)
+}
+
+
+export function fetchProfileState() {
+  return API.get('/usuarios/perfil/estado')
+    .then(res => res.data);               // { basicos, actividad, objetivo, preferencias, perfilCompleto }
 }

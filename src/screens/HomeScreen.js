@@ -14,7 +14,6 @@ import { COLORS }        from '../theme/color'
 import { useMacros }     from '../context/MacrosContext'
 
 export default function HomeScreen({ navigation }) {
-  // ① extraemos summary en vez de macrosRestantes
   const { summary, refreshMacros } = useMacros()
   const [animKey, setAnimKey]      = useState(1)
 
@@ -55,7 +54,7 @@ export default function HomeScreen({ navigation }) {
         />
 
         <AddButton
-          onPress={() => navigation.navigate('AddFood')}
+          onPress={() => navigation.navigate('AddFoodModal')}
           style={styles.addButton}
           size={90}
           backgroundColor={COLORS.primaryRed}

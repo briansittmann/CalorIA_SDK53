@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   Animated,
+  Image,
 } from 'react-native'
 import FoodInputCard from '../components/FoodInputCard'
 import FoodItem      from '../components/FoodItem'
@@ -17,6 +18,9 @@ import { COLORS }    from '../theme/color'
 import { registerFood } from '../services/foodService'
 import { useMacros } from '../context/MacrosContext'
 
+// Ilustración “Caloria comiendo”
+const BG_IMG = require('../../assets/images/caloriaComiendo.png')
+
 export default function AddFoodModal({ navigation }) {
   const { refreshMacros } = useMacros()
   const [name,    setName]    = useState('')
@@ -24,18 +28,17 @@ export default function AddFoodModal({ navigation }) {
   const [items,   setItems]   = useState([])
   const [loading, setLoading] = useState(false)
 
-  // Animated value para el fade-in del botón/texto
+  /* Fade-in del botón “Enviar” */
   const fadeAnim = useRef(new Animated.Value(0)).current
-
-  // Cada vez que cambie el número de items, disparo el fade
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: items.length > 0 ? 1 : 0,
-      duration: 500,           // medio segundo
+      duration: 500,
       useNativeDriver: true,
     }).start()
   }, [items.length, fadeAnim])
 
+  /* Handlers */
   const handleAdd = () => {
     if (!name.trim() || !grams.trim()) return
     setItems(prev => [...prev, { name: name.trim(), grams: grams.trim() }])
@@ -43,24 +46,15 @@ export default function AddFoodModal({ navigation }) {
     setGrams('')
   }
 
-  const removeItem = index => {
-    setItems(prev => prev.filter((_, i) => i !== index))
-  }
+  const removeItem = idx => setItems(prev => prev.filter((_, i) => i !== idx))
 
   const handleSend = async () => {
-    if (items.length === 0) {
-      Alert.alert('Añade al menos un alimento')
-      return
-    }
-
+    if (items.length === 0) return Alert.alert('Añade al menos un alimento')
     setLoading(true)
     try {
       await Promise.all(
-        items.map(item =>
-          registerFood({
-            nombre: item.name,
-            gramos: parseFloat(item.grams),
-          })
+        items.map(it =>
+          registerFood({ nombre: it.name, gramos: parseFloat(it.grams) })
         )
       )
       Alert.alert('¡Alimento añadido!')
@@ -74,12 +68,28 @@ export default function AddFoodModal({ navigation }) {
     }
   }
 
+  /* ——— Cálculos dinámicos para la ilustración ——— */
+  const bgBottom  = -60 - items.length * 30          // -60, -80, -100, ...
+  const bgOpacity = items.length > 0 ? 0.4 : 0.8     // cambia con ≥1 ítem
+
+  /* Render */
   return (
     <View
       style={styles.screen}
       behavior={Platform.select({ ios: 'padding', android: undefined })}
     >
-      {/* Input separado */}
+      {/* BACKGROUND */}
+      <Image
+        source={BG_IMG}
+        resizeMode="contain"
+        pointerEvents="none"
+        style={[
+          styles.bgImage,
+          { bottom: bgBottom, opacity: bgOpacity }
+        ]}
+      />
+
+      {/* Input principal */}
       <View style={styles.inputWrapper}>
         <Text style={styles.header}>Indique su alimento</Text>
         <FoodInputCard
@@ -91,7 +101,7 @@ export default function AddFoodModal({ navigation }) {
         />
       </View>
 
-      {/* ScrollView con items + botón animado */}
+      {/* Lista de items + botón enviar */}
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
@@ -105,7 +115,7 @@ export default function AddFoodModal({ navigation }) {
           />
         ))}
 
-        {/* Animated.View que aparece solo si hay items */}
+        {/* Botón animado / loader */}
         <Animated.View style={{ opacity: fadeAnim }}>
           {loading ? (
             <ActivityIndicator
@@ -131,37 +141,53 @@ export default function AddFoodModal({ navigation }) {
   )
 }
 
+/* ——— Styles ——— */
 const styles = StyleSheet.create({
   screen: {
-    flex:            1,
+    flex: 1,
     backgroundColor: COLORS.background,
   },
+
+  /* Imagen de fondo */
+  bgImage: {
+    position: 'absolute',
+    left:   -100,
+    width:  400,
+    height: 400,
+    // opacity se define dinámicamente
+  },
+
+  /* Cabecera e input */
   inputWrapper: {
-    marginTop:    20,
-    padding:      20,
-    alignItems:   'center',
+    marginTop: 20,
+    padding:   20,
+    alignItems: 'center',
   },
   header: {
-    fontSize:       18,
-    fontWeight:     'bold',
-    color:          COLORS.text,
-    marginBottom:   10,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 10,
   },
+
+  /* ScrollView */
   scrollContainer: {
-    flexGrow:          1,
+    flexGrow: 1,
     paddingHorizontal: 20,
-    paddingBottom:     60,
+    paddingBottom: 60,
   },
+
+  /* Botón / loader */
   sendButton: {
-    alignSelf:    'center',
-    marginTop:    30,
+    alignSelf: 'center',
+    marginTop: 30,
     marginBottom: 10,
   },
   addFoodButtonText: {
-    fontSize:     18,
-    fontWeight:   'bold',
-    color:        COLORS.text,
-    textAlign:    'center',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    textAlign: 'center',
     marginBottom: 40,
   },
 })

@@ -50,7 +50,13 @@ export default function LoginScreen() {
       setLoading(false)
     }
   }
-
+    const handleReset = async () => {
+    await AsyncStorage.clear()
+    console.log('🧹 Datos de AsyncStorage borrados')
+    // Opcional: forzar recarga de la app
+    if (Platform.OS === 'web') window.location.reload()
+    else RNRestart.Restart()    // si usas react-native-restart
+  }
   return (
     <View style={[styles.container, { backgroundColor: COLORS.background }]}>
       <Header navigation={navigation} />
