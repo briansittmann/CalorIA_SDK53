@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, Image } from 'react-native'
 import { Picker } from '@react-native-picker/picker'
 import Toast from 'react-native-toast-message'
@@ -46,19 +46,27 @@ const niveles = [
 ]
 
 export default function ActivityScreen({ navigation }) {
-  const { setState } = useAuth()
+  const { profileState, refreshProfileState } = useAuth()
   const [level, setLevel] = useState('MUY_BAJA')
+
+    // Guard: si ya completó actividad, saltar a Goal
+  useEffect(() => {
+    console.log('[ActivityScreen] actividadCompleta=', profileState?.actividadCompleta)
+    if (profileState?.actividadCompleta) {
+      console.log('[ActivityScreen] saltando a Goal')
+      navigation.replace('Goal')
+    }
+  }, [profileState?.actividadCompleta, navigation])
 
   const onSubmit = async () => {
     try {
       await updateActivity({ nivelActividad: level })
-      Toast.show({ type: 'success', text1: '💪 Nivel de actividad guardado' })
-      const perfilActualizado = await fetchProfileState()
-      setState(perfilActualizado)
-      navigation.replace('Goal')
-    } catch (error) {
-      Toast.show({ type: 'error', text1: 'Error al guardar nivel de actividad' })
-      console.error(error)
+      Toast.show({ type:'success', text1:'💪 Nivel guardado' })
+      await refreshProfileState()
+      // el useEffect anterior se encargará de replace
+    } catch (err) {
+      Toast.show({ type:'error', text1:'Error al guardar actividad' })
+      console.error(err)
     }
   }
 

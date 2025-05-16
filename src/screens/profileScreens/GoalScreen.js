@@ -1,5 +1,5 @@
 // src/screens/profileScreens/GoalScreen.js
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -62,15 +62,18 @@ const objetivos = [
 ]
 
 export default function GoalScreen ({ navigation }) {
-  const { setState } = useAuth()
+  const { profileState, refreshProfileState } = useAuth()
   const [goal, setGoal] = useState('MANTENER')
 
-  const onSubmit = async () => {
-    await updateGoal({ objetivo: goal })
-    Toast.show({ type:'success', text1:'🎯 Objetivo guardado' })
-    setState(await fetchProfileState())
-    navigation.replace('Preference')
-  }
+  useEffect(() => {
+  if (profileState?.objetivoCompleto) navigation.replace('Preference')
+}, [profileState?.objetivoCompleto])
+
+const onSubmit = async () => {
+  await updateGoal({ objetivo: goal })
+  Toast.show({ type:'success', text1:'🎯 Objetivo guardado' })
+  await refreshProfileState()
+}
 
   const currentDesc = objetivos.find(o => o.value === goal)?.desc ?? ''
 

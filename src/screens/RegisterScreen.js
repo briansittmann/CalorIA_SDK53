@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native'
+import { CommonActions } from '@react-navigation/native'
 import { COLORS } from '../theme/color'
 import Header from '../components/Header'
 import CustomButton from '../components/CustomButton'
@@ -22,7 +23,8 @@ export default function RegisterScreen({ navigation }) {
   const [errorMessage, setErrorMessage] = useState('')
   const [loading, setLoading]         = useState(false)
 
-  const handleRegister = async () => {
+    const handleRegister = async () => {
+    // 1️⃣ Validaciones básicas
     if (!email.trim() || !password) {
       return setErrorMessage('Email y contraseña son obligatorios')
     }
@@ -32,19 +34,37 @@ export default function RegisterScreen({ navigation }) {
 
     setErrorMessage('')
     setLoading(true)
+
     try {
-      // registerUser devuelve token JWT
+      // 2️⃣ Registramos y obtenemos token
       const token = await registerUser({ email: email.trim(), password })
-      await signIn(email.trim(), password) // reutiliza tu signIn para persistir token
-      // navegamos al Main (o donde dirija tu useEffect en LoginScreen)
+      // 3️⃣ Hacemos sign-in para guardar token en contexto
+      await signIn(email.trim(), password)
     } catch (err) {
       setErrorMessage(err.message || 'Error al registrar')
       setLoading(false)
       return
     }
+
     setLoading(false)
+
+    // 4️⃣ Alerta de éxito y reset al Main en el root stack
     Alert.alert('¡Éxito!', 'Cuenta creada correctamente', [
-      { text: 'OK', onPress: () => navigation.replace('Main') }
+      {
+        text: 'OK',
+        onPress: () => {
+          // subimos primero al AuthNavigator...
+          const authStack = navigation.getParent()
+          // ...y de ahí al RootStack
+          const rootStack = authStack?.getParent()
+          rootStack?.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Main' }],
+            })
+          )
+        }
+      }
     ])
   }
 
