@@ -1,3 +1,4 @@
+// src/screens/profileScreens/PreferencesScreen.js
 import React, { useState, useEffect, useRef } from 'react'
 import {
   KeyboardAvoidingView,
@@ -17,47 +18,76 @@ import TagInputCard from '../../components/TagInputCard'
 import CustomButton from '../../components/CustomButton'
 import {
   updatePreferences,
-  fetchProfileState
+  fetchFullProfile,
+  fetchProfileState,
+  recalcMetas
 } from '../../services/registerService'
 import { useAuth } from '../../context/AuthContext'
 import { COLORS } from '../../theme/color'
 import preferenciasImg from '../../../assets/images/preferencias.png'
 
-export default function PreferencesScreen({ navigation }) {
+export default function PreferencesScreen({ navigation, route }) {
   const { profileState, refreshProfileState } = useAuth()
-  const [prefs, setPrefs] = useState([])
+  const { editMode = false } = route.params || {}
+  const [prefs, setPrefs]   = useState([])
   const [alergs, setAlergs] = useState([])
+
+  // Para mostrar alerta solo la primera vez que completamos el perfil
   const firstTime = useRef(!profileState?.perfilCompleto)
 
-  const disabled = prefs.length === 0 && alergs.length === 0
+  // 1️⃣ Precargar datos si estamos editando
+  useEffect(() => {
+    if (editMode) {
+      fetchFullProfile()
+        .then(p => {
+          setPrefs(p.preferencias || [])
+          setAlergs(p.alergias || [])
+        })
+        .catch(err => console.warn('No se pudo cargar preferencias para editar:', err))
+    }
+  }, [editMode])
+
+  // 2️⃣ Si no es edición y ya completamos, salir al Main
+  useEffect(() => {
+    if (!editMode && profileState?.preferenciasCompletas) {
+      const wizard = navigation.getParent()
+      const root   = wizard?.getParent()
+      root?.dispatch(
+        CommonActions.reset({ index: 0, routes: [{ name: 'Main' }] })
+      )
+    }
+  }, [editMode, profileState?.preferenciasCompletas, navigation])
 
   const onSubmit = async () => {
     try {
-      // 1️⃣ Guardar en backend
-      const resp = await updatePreferences({ preferencias: prefs, alergias: alergs })
+      // 3️⃣ Guardar en backend (acepta arrays vacíos)
+      await updatePreferences({ preferencias: prefs, alergias: alergs })
       Toast.show({ type: 'success', text1: '✅ Preferencias guardadas' })
 
-      // 2️⃣ Refrescar contexto
-      await refreshProfileState()
+      if (editMode) {
+        // 4️⃣ En edición: recalcular macros y cerrar modal
+        await recalcMetas()
+        navigation.getParent()?.goBack()
+        return
+      }
 
-      // 3️⃣ Obtener nuevo estado
+      // 5️⃣ Onboarding: refrescar y comprobar completitud
+      await refreshProfileState()
       const newState = await fetchProfileState()
 
-      // 4️⃣ Si perfil completo tras este submit
       if (newState.perfilCompleto) {
-        // Mostrar alerta si es la primera vez
         if (firstTime.current) {
           Alert.alert(
             '🎉 ¡Perfil completo!',
-            'Tu perfil se ha creado con éxito. Ahora verás un resumen de tus calorías y macros objetivo para completar tu objetivo.',
+            'Tu perfil se ha creado con éxito. Ahora verás un resumen de tus calorías y macros objetivo.',
             [{ text: '¡Genial!' }]
           )
           firstTime.current = false
         }
-        // Reset al Main
-        const wizardStack = navigation.getParent()
-        const rootStack = wizardStack?.getParent()
-        rootStack?.dispatch(
+        // 6️⃣ Reset al Main
+        const wizard = navigation.getParent()
+        const root   = wizard?.getParent()
+        root?.dispatch(
           CommonActions.reset({ index: 0, routes: [{ name: 'Main' }] })
         )
       } else {
@@ -73,7 +103,7 @@ export default function PreferencesScreen({ navigation }) {
     }
   }
 
-  /* Individual tag */
+  /* Componente para cada etiqueta */
   const Tag = ({ text, color, onRemove }) => (
     <TouchableOpacity style={[styles.tag, { backgroundColor: color }]} onPress={onRemove}>
       <Text style={styles.tagTxt}>{text} ✕</Text>
@@ -82,7 +112,9 @@ export default function PreferencesScreen({ navigation }) {
 
   const TagList = ({ data, color, remover }) => (
     <View style={styles.tagWrap}>
-      {data.map(t => <Tag key={t} text={t} color={color} onRemove={() => remover(t)} />)}
+      {data.map(t => (
+        <Tag key={t} text={t} color={color} onRemove={() => remover(t)} />
+      ))}
     </View>
   )
 
@@ -92,7 +124,10 @@ export default function PreferencesScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.select({ ios: 60, android: 0 })}
     >
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+      >
         <Image source={preferenciasImg} style={styles.image} />
         <Text style={styles.title}>🍽️ Preferencias & alergias</Text>
         <Text style={styles.subtitle}>
@@ -107,7 +142,11 @@ export default function PreferencesScreen({ navigation }) {
           placeholder="Ej: sin gluten, vegetariano…"
           hideTags
         />
-        <TagList data={prefs} color={COLORS.primaryBlue} remover={tag => setPrefs(prefs.filter(t => t !== tag))} />
+        <TagList
+          data={prefs}
+          color={COLORS.primaryBlue}
+          remover={tag => setPrefs(prev => prev.filter(t => t !== tag))}
+        />
 
         <TagInputCard
           title="⚠️ Alergias"
@@ -117,21 +156,28 @@ export default function PreferencesScreen({ navigation }) {
           placeholder="Ej: maní, mariscos, lactosa"
           hideTags
         />
-        <TagList data={alergs} color={COLORS.primaryRed} remover={tag => setAlergs(alergs.filter(t => t !== tag))} />
+        <TagList
+          data={alergs}
+          color={COLORS.primaryRed}
+          remover={tag => setAlergs(prev => prev.filter(t => t !== tag))}
+        />
 
-        <CustomButton label="Finalizar" disabled={disabled} onPress={onSubmit} />
+        <CustomButton
+          label="Finalizar"
+          onPress={onSubmit}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  scroll: { padding: 24, paddingBottom: 48 },
-  image: { marginTop: 45, width: 150, height: 150, alignSelf: 'center' },
-  title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 4 },
+  flex:     { flex: 1 },
+  scroll:   { padding: 24, paddingBottom: 48 },
+  image:    { marginTop: 45, width: 150, height: 150, alignSelf: 'center' },
+  title:    { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 4 },
   subtitle: { textAlign: 'center', marginBottom: 24, color: '#666' },
-  tagWrap: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 24 },
-  tag: { borderRadius: 16, paddingHorizontal: 12, paddingVertical: 4, marginRight: 8, marginTop: 8 },
-  tagTxt: { color: '#fff', fontWeight: '600' }
+  tagWrap:  { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 24 },
+  tag:      { borderRadius: 16, paddingHorizontal: 12, paddingVertical: 4, marginRight: 8, marginTop: 8 },
+  tagTxt:   { color: '#fff', fontWeight: '600' }
 })

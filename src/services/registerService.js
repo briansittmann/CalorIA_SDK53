@@ -66,6 +66,9 @@ export function checkProfileComplete() {
     .then(res => res.data.perfilCompleto)
 }
 
+export function recalcMetas() {
+  return API.put('/usuarios/perfil/recalcular-metas').then(r => r.data);
+}
 /**
  * Recupera el perfil completo.
  * GET /usuarios/perfil

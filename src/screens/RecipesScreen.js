@@ -82,7 +82,7 @@ export default function RecipesScreen({ navigation }) {
         <CustomButton
           label="Generar recetas"
           colorType="blue"
-          onPress={() => navigation.navigate('GenerateRecipes')}
+          onPress={() => navigation.navigate('GenerateRecipeModal')}
         />
       </View>
     </View>
@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
+    paddingBottom: -500,
   },
   emptyImage: {
     width: '70%',
@@ -132,7 +133,8 @@ const styles = StyleSheet.create({
   },
 
   footer: {
-    paddingVertical: 16,
+    paddingBottom: 30,
+    paddingVertical: 20,
     alignItems: 'center',
   },
 })

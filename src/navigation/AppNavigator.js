@@ -2,39 +2,59 @@
 import React, { useEffect } from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-
-import { useAuth }    from '../context/AuthContext'
+import { useAuth } from '../context/AuthContext'
 import LoadingSpinner from '../components/LoadingSpinner'
 
 import AuthNavigator      from './AuthNavigator'
-import MainNavigator      from './MainNavigator'
 import ProfileWizardStack from './ProfileWizardStack'
+import MainStack          from './MainStack'
 
 const RootStack = createNativeStackNavigator()
 
 export default function AppNavigator() {
   const { token, loading, profileState } = useAuth()
 
-  // 1️⃣ Mientras carga token + perfil
   useEffect(() => {
-    console.log('[AppNavigator] loading=', loading,
-                ' token=', token,
-                ' profileState=', profileState)
+    console.log(
+      '[AppNavigator] loading=', loading,
+      ' token=', token,
+      ' profileState=', profileState
+    )
   }, [loading, token, profileState])
 
-  if (loading) return <LoadingSpinner />
+  if (loading) {
+    return <LoadingSpinner />
+  }
 
-  // 2️⃣ ¿Necesita wizard?
-  const needsWizard = token && !profileState?.perfilCompleto
-  console.log('[AppNavigator] needsWizard=', needsWizard)
+  const needsWizard = !!token && !profileState?.perfilCompleto
 
   return (
     <NavigationContainer>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
 
-        {!token && <RootStack.Screen name="Auth" component={AuthNavigator} />}
-        {token && needsWizard && <RootStack.Screen name="Wizard" component={ProfileWizardStack} />}
-        {token && !needsWizard && <RootStack.Screen name="Main" component={MainNavigator} />}
+        {/* 1️⃣ Si NO hay token → registro/login */}
+        {!token && (
+          <RootStack.Screen
+            name="Auth"
+            component={AuthNavigator}
+          />
+        )}
+
+        {/* 2️⃣ Si hay token pero NO perfil completo → onboarding */}
+        {token && needsWizard && (
+          <RootStack.Screen
+            name="Wizard"
+            component={ProfileWizardStack}
+          />
+        )}
+
+        {/* 3️⃣ Si hay token Y perfil completo → app principal */}
+        {token && !needsWizard && (
+          <RootStack.Screen
+            name="Main"
+            component={MainStack}
+          />
+        )}
 
       </RootStack.Navigator>
     </NavigationContainer>

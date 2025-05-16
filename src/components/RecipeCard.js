@@ -84,13 +84,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: COLORS.primaryBlue,
+    color: COLORS.secondaryBlue,
     flex: 1,
     flexWrap: 'wrap',
   },
   calories: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: 'bold',
     color: COLORS.primaryRed,
     marginLeft: 8,
   },
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   section: {
     fontSize: 16,
     fontWeight: '600',
-    color: COLORS.primaryBlue,
+    color: COLORS.secondaryBlue,
     marginTop: 8,
     marginBottom: 4,
   },
