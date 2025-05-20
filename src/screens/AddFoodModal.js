@@ -38,10 +38,10 @@ export default function AddFoodModal({ navigation }) {
     }).start()
   }, [items.length, fadeAnim])
 
-  /* Handlers */
   const handleAdd = () => {
-    if (!name.trim() || !grams.trim()) return
-    setItems(prev => [...prev, { name: name.trim(), grams: grams.trim() }])
+    if (!name.trim()) return
+    const g = grams.trim() ? parseFloat(grams.trim()) : 0
+    setItems(prev => [...prev, { name: name.trim(), grams: g }])
     setName('')
     setGrams('')
   }
@@ -49,47 +49,49 @@ export default function AddFoodModal({ navigation }) {
   const removeItem = idx => setItems(prev => prev.filter((_, i) => i !== idx))
 
   const handleSend = async () => {
-    if (items.length === 0) return Alert.alert('Añade al menos un alimento')
+    if (items.length === 0) {
+      return Alert.alert('Añade al menos un alimento')
+    }
     setLoading(true)
     try {
-      await Promise.all(
-        items.map(it =>
-          registerFood({ nombre: it.name, gramos: parseFloat(it.grams) })
-        )
+      const resp = await registerFood(
+        items.map(it => ({ nombre: it.name, gramos: it.grams }))
       )
+      // Si la IA responde con { error: "..." }
+      if (resp.data && resp.data.error) {
+        return Alert.alert('Error', resp.data.error)
+      }
       Alert.alert('¡Alimento añadido!')
       await refreshMacros()
       navigation.goBack()
     } catch (err) {
       console.error('Error registrando alimentos:', err)
-      Alert.alert('Error', 'No se pudo enviar, inténtalo de nuevo')
+      // Si el servidor devolvió un 4xx/5xx con body { error: "..."}
+      if (err.response && err.response.data && err.response.data.error) {
+        Alert.alert('Error', err.response.data.error)
+      } else {
+        Alert.alert('Error', 'No se pudo enviar, inténtalo de nuevo')
+      }
     } finally {
       setLoading(false)
     }
   }
 
-  /* ——— Cálculos dinámicos para la ilustración ——— */
-  const bgBottom  = -60 - items.length * 30          // -60, -80, -100, ...
-  const bgOpacity = items.length > 0 ? 0.4 : 0.8     // cambia con ≥1 ítem
+  const bgBottom  = -60 - items.length * 30
+  const bgOpacity = items.length > 0 ? 0.4 : 0.8
 
-  /* Render */
   return (
     <View
       style={styles.screen}
       behavior={Platform.select({ ios: 'padding', android: undefined })}
     >
-      {/* BACKGROUND */}
       <Image
         source={BG_IMG}
         resizeMode="contain"
         pointerEvents="none"
-        style={[
-          styles.bgImage,
-          { bottom: bgBottom, opacity: bgOpacity }
-        ]}
+        style={[styles.bgImage, { bottom: bgBottom, opacity: bgOpacity }]}
       />
 
-      {/* Input principal */}
       <View style={styles.inputWrapper}>
         <Text style={styles.header}>Indique su alimento</Text>
         <FoodInputCard
@@ -101,7 +103,6 @@ export default function AddFoodModal({ navigation }) {
         />
       </View>
 
-      {/* Lista de items + botón enviar */}
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
@@ -115,14 +116,18 @@ export default function AddFoodModal({ navigation }) {
           />
         ))}
 
-        {/* Botón animado / loader */}
         <Animated.View style={{ opacity: fadeAnim }}>
           {loading ? (
-            <ActivityIndicator
-              size="large"
-              color={COLORS.primaryRed}
-              style={styles.sendButton}
-            />
+            <>
+              <ActivityIndicator
+                size="large"
+                color={COLORS.primaryRed}
+                style={styles.sendButton}
+              />
+              <Text style={styles.processingText}>
+                Estamos procesando sus alimentos, esto puede tardar unos segundos.
+              </Text>
+            </>
           ) : (
             <SendButton
               size={90}
@@ -132,7 +137,7 @@ export default function AddFoodModal({ navigation }) {
               style={styles.sendButton}
             />
           )}
-          {items.length > 0 && (
+          {!loading && items.length > 0 && (
             <Text style={styles.addFoodButtonText}>Enviar</Text>
           )}
         </Animated.View>
@@ -141,53 +146,17 @@ export default function AddFoodModal({ navigation }) {
   )
 }
 
-/* ——— Styles ——— */
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-
-  /* Imagen de fondo */
-  bgImage: {
-    position: 'absolute',
-    left:   -100,
-    width:  400,
-    height: 400,
-    // opacity se define dinámicamente
-  },
-
-  /* Cabecera e input */
-  inputWrapper: {
-    marginTop: 20,
-    padding:   20,
-    alignItems: 'center',
-  },
-  header: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 10,
-  },
-
-  /* ScrollView */
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingBottom: 60,
-  },
-
-  /* Botón / loader */
-  sendButton: {
-    alignSelf: 'center',
-    marginTop: 30,
-    marginBottom: 10,
-  },
+  screen: { flex: 1, backgroundColor: COLORS.background },
+  bgImage: { position: 'absolute', left: -100, width: 400, height: 400 },
+  inputWrapper: { marginTop: 20, padding: 20, alignItems: 'center' },
+  header: { fontSize: 18, fontWeight: 'bold', color: COLORS.text, marginBottom: 10 },
+  scrollContainer: { flexGrow: 1, paddingHorizontal: 20, paddingBottom: 60 },
+  sendButton: { alignSelf: 'center', marginTop: 30, marginBottom: 10 },
   addFoodButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    textAlign: 'center',
-    marginBottom: 40,
+    fontSize: 18, fontWeight: 'bold', color: COLORS.text, textAlign: 'center', marginBottom: 40
+  },
+  processingText: {
+    fontSize: 16, fontStyle: 'italic', color: COLORS.text, textAlign: 'center', marginTop: 10, marginBottom: 40
   },
 })

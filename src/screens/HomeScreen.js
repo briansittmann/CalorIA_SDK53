@@ -3,7 +3,7 @@ import React, { useCallback, useState } from 'react'
 import { useFocusEffect } from '@react-navigation/native'
 import {
   View,
-  ScrollView,
+  ScrollView, Image,
   ActivityIndicator,
   StyleSheet,
   Text,
@@ -16,11 +16,15 @@ import { useMacros }     from '../context/MacrosContext'
 export default function HomeScreen({ navigation }) {
   const { summary, refreshMacros } = useMacros()
   const [animKey, setAnimKey]      = useState(1)
+  const [waveKey, setWaveKey] = useState(1)
 
-  useFocusEffect(useCallback(() => {
-    setAnimKey(k => k + 1)
-    refreshMacros()
-  }, [navigation,refreshMacros]))
+
+useFocusEffect(useCallback(() => {
+  setAnimKey(k => k + 1)   // reinicia progreso vertical y barras
+  setWaveKey(w => w + 1)   // 🔁 reinicia la animación lateral
+  refreshMacros()
+}, [refreshMacros]))
+
 
   // ② mostramos loader mientras summary sea null
   if (!summary) {
@@ -42,6 +46,10 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Image
+                      source={require('../../assets/images/logo-icon.png')}
+                      style={styles.icon}
+         />
         <MacronutrientCard
           totalCalories={caloriasObjetivo}
           consumedCalories={caloriasConsumidas}
@@ -51,12 +59,14 @@ export default function HomeScreen({ navigation }) {
           carbsConsumed={macrosConsumidos.carbohidratosG}
           proteinConsumed={macrosConsumidos.proteinasG}
           fatsConsumed={macrosConsumidos.grasasG}
+          animationKey={animKey}
+          lateralKey={waveKey} 
         />
 
         <AddButton
           onPress={() => navigation.navigate('AddFoodModal')}
           style={styles.addButton}
-          size={90}
+          size={85}
           backgroundColor={COLORS.primaryRed}
           iconColor={COLORS.text}
         />
@@ -70,15 +80,15 @@ const styles = StyleSheet.create({
   container: {
     flex:            1,
     backgroundColor: COLORS.background,
-    paddingTop:      20,
     alignItems:      'center',
   },
+  icon:         { width: 140, height: 100, marginTop:-6, marginBottom: -5 },
   scrollContainer: {
     alignItems:    'center',
-    paddingBottom: 60,
+    paddingBottom: 10,
   },
   addButton: {
-    marginTop:    30,
+    marginTop:    25,
     marginBottom: 10,
   },
   addFoodText: {

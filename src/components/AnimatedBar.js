@@ -9,8 +9,8 @@ export default function AnimatedBar({
   duration = 1000,        // ms (velocidad)
   animationKey = 0,       // reinicia animación
   width = 110,
-  height = 15,
-  radius = 6,
+  height = 18,
+  radius = 25,
   barStyle,               // (opcional) override
   color        = COLORS.secondaryBlue, // relleno
   track        = COLORS.primaryBlue,   // fondo

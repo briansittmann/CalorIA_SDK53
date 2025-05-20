@@ -23,22 +23,22 @@ export default function MainNavigator() {
         headerTitleAlign: 'center',
         headerStyle: { backgroundColor: COLORS.background },
 
-        tabBarActiveTintColor: COLORS.text,
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: COLORS.primaryBlue,
+        tabBarInactiveTintColor: COLORS.text,
         tabBarStyle: {
-          height: 70,
+          height: 75,
           backgroundColor: COLORS.primaryRed,
           borderTopWidth: 0,
         },
         // Ajustes para centrar verticalmente
         tabBarIconStyle: {
-          marginTop: 8,        // desplaza el icono hacia abajo
+          marginTop: 8,       
         },
         tabBarLabelStyle: {
-          marginBottom: 6,     // un poco de separación etiqueta-icono
+          marginBottom: 6,     
         },
         tabBarItemStyle: {
-          paddingVertical: 0,  // quita padding extra
+          paddingVertical: 0,  
         },
 
         tabBarIcon: ({ color, size }) => {
@@ -47,7 +47,7 @@ export default function MainNavigator() {
           else if (route.name === 'Diario') iconName = 'book-open'
           else if (route.name === 'Recetas') iconName = 'book'
           else if (route.name === 'Perfil') iconName = 'user'
-          else iconName = 'circle'
+          else iconName = 'circlee'
 
           return <Feather name={iconName} size={size} color={color} />
         },
@@ -65,7 +65,16 @@ export default function MainNavigator() {
           ),
         }}
       />
-      <Tab.Screen name="Diario"   component={DiaryScreen}   />
+      <Tab.Screen name="Diario"   
+      component={DiaryScreen}           options={{
+            headerTitle: 'Diario',
+            headerTitleStyle: {
+              color: COLORS.text,
+              fontWeight: 'bold',
+              fontSize: 20,
+            },
+          }}  />
+
       <Tab.Screen
           name="Recetas"
           component={RecipesScreen}
@@ -78,15 +87,24 @@ export default function MainNavigator() {
             },
           }}
 />
-      <Tab.Screen name="Perfil"   component={ProfileScreen} />
+      <Tab.Screen name="Perfil"   
+      component={ProfileScreen}
+          options={{
+            headerTitle: 'Mi perfil',
+            headerTitleStyle: {
+              color: COLORS.text,
+              fontWeight: 'bold',
+              fontSize: 20,
+            },
+          }} />
     </Tab.Navigator>
   )
 }
 
 const styles = StyleSheet.create({
   logo: {
-    width: 130,
-    height: 40,
+    width: 150,
+    height: 100,
     resizeMode: 'contain',
   },
 })

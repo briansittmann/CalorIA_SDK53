@@ -19,7 +19,8 @@ export default function FoodItem({ name, grams, onDelete }) {
     >
       <View style={styles.container}>
         <Text style={styles.name}>{name}</Text>
-        <Text style={styles.grams}>{grams} g</Text>
+        {/* Solo mostramos gramos si son > 0 */}
+        {grams > 0 && <Text style={styles.grams}>{grams} g</Text>}
 
         {showDelete && (
           <TouchableOpacity

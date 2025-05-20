@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     color: COLORS.text,
-    marginTop: 12,
+    marginTop:12,
   },
   emptySubtitle: {
     fontSize: 16,
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
 
   footer: {
     paddingBottom: 30,
-    paddingVertical: 20,
+    paddingTop: 30,
     alignItems: 'center',
   },
 })

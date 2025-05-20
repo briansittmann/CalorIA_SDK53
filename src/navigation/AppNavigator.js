@@ -23,39 +23,33 @@ export default function AppNavigator() {
   }, [loading, token, profileState])
 
   if (loading) {
+    console.log('[AppNavigator] Mostrando LoadingSpinner…')
     return <LoadingSpinner />
   }
 
-  const needsWizard = !!token && !profileState?.perfilCompleto
+  const needsWizard = !!token && profileState !== null && !profileState.perfilCompleto
+
+  // Loguear a dónde va a ir
+  if (!token) {
+    console.log('[AppNavigator] Sin token → Auth flow (Splash)')
+  } else if (needsWizard) {
+    console.log('[AppNavigator] Token válido pero perfil incompleto → Wizard')
+  } else {
+    console.log('[AppNavigator] Token válido y perfil completo → MainStack')
+  }
 
   return (
     <NavigationContainer>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
-
-        {/* 1️⃣ Si NO hay token → registro/login */}
         {!token && (
-          <RootStack.Screen
-            name="Auth"
-            component={AuthNavigator}
-          />
+          <RootStack.Screen name="Auth" component={AuthNavigator} />
         )}
-
-        {/* 2️⃣ Si hay token pero NO perfil completo → onboarding */}
         {token && needsWizard && (
-          <RootStack.Screen
-            name="Wizard"
-            component={ProfileWizardStack}
-          />
+          <RootStack.Screen name="Wizard" component={ProfileWizardStack} />
         )}
-
-        {/* 3️⃣ Si hay token Y perfil completo → app principal */}
         {token && !needsWizard && (
-          <RootStack.Screen
-            name="Main"
-            component={MainStack}
-          />
+          <RootStack.Screen name="Main" component={MainStack} />
         )}
-
       </RootStack.Navigator>
     </NavigationContainer>
   )

@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import MainNavigator      from './MainNavigator'      // tus BottomTabs
 import AddFoodModal       from '../screens/AddFoodModal'
-import GenerateRecipeModal       from '../screens/GenerateRecipeModal'
+import GenerateRecipeModal from '../screens/GenerateRecipeModal'
 import ProfileWizardStack from './ProfileWizardStack' // editable desde “Perfil”
 
 const Stack = createNativeStackNavigator()

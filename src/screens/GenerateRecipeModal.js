@@ -1,4 +1,3 @@
-// src/screens/GenerateRecipeModal.js
 import React, { useState, useCallback } from 'react'
 import {
   View,
@@ -26,7 +25,9 @@ export default function GenerateRecipeModal({ navigation }) {
   const [loading, setLoading]       = useState(false)
   const [recetas, setRecetas]       = useState([])
 
-  useFocusEffect(useCallback(() => { refreshMacros() }, [refreshMacros]))
+  useFocusEffect(
+    useCallback(() => { refreshMacros() }, [refreshMacros])
+  )
 
   const handleGenerate = () => {
     if (!macrosRest) return Alert.alert('Espera', 'Cargando macros…')
@@ -52,7 +53,9 @@ export default function GenerateRecipeModal({ navigation }) {
     <ImageBackground
       source={CHEF_IMG}
       style={styles.background}
-      imageStyle={isEmptyState ? styles.bgImageEmpty : styles.bgImageFilled}
+      imageStyle={
+        isEmptyState ? styles.bgImageEmpty : styles.bgImageFilled
+      }
       resizeMode="cover"
     >
       <ScrollView
@@ -67,25 +70,33 @@ export default function GenerateRecipeModal({ navigation }) {
           style={[
             styles.info,
             isEmptyState ? styles.infoEmpty : styles.infoFilled,
-            styles.block
+            styles.block,
           ]}
         >
           Tienes{' '}
           <Text style={styles.highlight}>
-            {macrosRest ? `${macrosRest.caloriasRestantes} kcal` : '…kcal'}
+            {macrosRest
+              ? `${macrosRest.caloriasRestantes} kcal`
+              : '…kcal'}
           </Text>{' '}
-          por cubrir. Escoge de 1 a 4 comidas y pulsa «Generar» para encontrar recetas que se ajusten a tu objetivo.
+          por cubrir. Escoge de 1 a 4 comidas y pulsa «Generar» para encontrar
+          recetas que se ajusten a tu objetivo.
         </Text>
 
         {/* Selector 1–4 */}
         <View style={[styles.selector, styles.block]}>
-          {[1,2,3,4].map(n => (
+          {[1, 2, 3, 4].map((n) => (
             <TouchableOpacity
               key={n}
-              style={[styles.bola, numComidas===n && styles.bolaActiva]}
+              style={[styles.bola, numComidas === n && styles.bolaActiva]}
               onPress={() => setNumComidas(n)}
             >
-              <Text style={[styles.bolaTexto, numComidas===n && styles.bolaTextoActiva]}>
+              <Text
+                style={[
+                  styles.bolaTexto,
+                  numComidas === n && styles.bolaTextoActiva,
+                ]}
+              >
                 {n}
               </Text>
             </TouchableOpacity>
@@ -93,20 +104,28 @@ export default function GenerateRecipeModal({ navigation }) {
         </View>
 
         {/* Botón Generar */}
-        <CustomButton
-          label="      Generar      "
-          colorType="blue"
-          onPress={handleGenerate}
-          style={[styles.button, styles.block, styles.generateButton]}
-        />
-
-        {/* Loader */}
-        {loading && (
-          <ActivityIndicator
-            size="large"
-            color={COLORS.primaryRed}
-            style={[styles.loader, styles.block]}
+        {!loading && (
+          <CustomButton
+            label="      Generar      "
+            colorType="blue"
+            onPress={handleGenerate}
+            style={[styles.button, styles.block, styles.generateButton]}
           />
+        )}
+
+        {/* Loader y mensaje */}
+        {loading && (
+          <View style={styles.block}>
+            <ActivityIndicator
+              size="large"
+              color={COLORS.primaryRed}
+              style={styles.loader}
+            />
+            <Text style={styles.processingText}>
+              Estamos generando recetas en base a tus necesidades, preferencias y
+              restricciones alimenticias. Esto puede tardar un momento.
+            </Text>
+          </View>
         )}
 
         {/* Lista de recetas */}
@@ -116,7 +135,9 @@ export default function GenerateRecipeModal({ navigation }) {
               <RecipeCard
                 key={i}
                 receta={item}
-                onDelete={() => setRecetas(rs => rs.filter((_, j) => j !== i))}
+                onDelete={() =>
+                  setRecetas((rs) => rs.filter((_, j) => j !== i))
+                }
                 style={styles.card}
               />
             ))}
@@ -137,7 +158,6 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
   },
-  // Fondo cuando NO hay recetas
   bgImageEmpty: {
     opacity: 0.8,
     width: 250,
@@ -146,7 +166,6 @@ const styles = StyleSheet.create({
     top: 50,
     left: 80,
   },
-  // Fondo cuando HAY recetas
   bgImageFilled: {
     opacity: 0.5,
     width: 430,
@@ -155,7 +174,6 @@ const styles = StyleSheet.create({
     top: 260,
     left: -100,
   },
-
   container: {
     marginTop: 50,
     marginBottom: 50,
@@ -167,11 +185,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   block: {
-    marginVertical: 30,   // espacio extra entre bloques
+    marginVertical: 30,
     width: '100%',
   },
-
-  // Info: dos variantes de paddingTop
   info: {
     marginBottom: -10,
     fontSize: 16,
@@ -184,13 +200,11 @@ const styles = StyleSheet.create({
   infoFilled: {
     paddingTop: -5,
   },
-
   highlight: {
     color: COLORS.primaryRed,
     fontSize: 18,
     fontWeight: 'bold',
   },
-
   selector: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -215,24 +229,31 @@ const styles = StyleSheet.create({
   bolaTextoActiva: {
     color: COLORS.text,
   },
-
   button: {
     width: '100%',
     marginHorizontal: 0,
   },
   generateButton: {
-    marginBottom: 30,  
+    marginBottom: 30,
   },
   saveButton: {
-    marginBottom: 50, 
+    marginBottom: 50,
   },
-
   loader: {
-    // centrado por container
+    alignSelf: 'center',
+    marginTop: 30,
+    marginBottom: 10,
   },
-
+  processingText: {
+    fontSize: 16,
+    fontStyle: 'italic',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginHorizontal: 20,
+    marginBottom: 40,
+  },
   card: {
-    marginVertical: 20, // más separación entre tarjetas
+    marginVertical: 20,
     alignSelf: 'center',
     width: '100%',
   },

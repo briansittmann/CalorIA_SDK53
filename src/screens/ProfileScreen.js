@@ -1,4 +1,3 @@
-// src/screens/ProfileScreen.js
 import React, { useState } from 'react'
 import {
   View, Text, StyleSheet, ScrollView,
@@ -19,13 +18,13 @@ const niveles = [
   { value: 'EXTREMA',   label: '🔥 Extrema' },
 ]
 const objetivos = [
-  { value: 'CUT_LIGERO',     label: '📉 Déficit suave' },
-  { value: 'CUT_MEDIO',      label: '📉 Déficit moderado' },
-  { value: 'CUT_AGRESIVO',   label: '⚠️ Déficit agresivo' },
-  { value: 'MANTENER',       label: '⚖️ Mantener peso' },
-  { value: 'BULK_CONSERVADOR', label: '🍚 Superávit ligero' },
+  { value: 'CUT_LIGERO',      label: '📉 Déficit suave' },
+  { value: 'CUT_MEDIO',       label: '📉 Déficit moderado' },
+  { value: 'CUT_AGRESIVO',    label: '⚠️ Déficit agresivo' },
+  { value: 'MANTENER',        label: '⚖️ Mantener peso' },
+  { value: 'BULK_CONSERVADOR',label: '🍚 Superávit ligero' },
   { value: 'BULK_ESTANDAR',   label: '💪 Superávit moderado' },
-  { value: 'BULK_AGRESIVO',  label: '🔥 Superávit agresivo' },
+  { value: 'BULK_AGRESIVO',   label: '🔥 Superávit agresivo' },
 ]
 
 function mapLabel(list, value) {
@@ -52,7 +51,6 @@ export default function ProfileScreen({ navigation }) {
 
   const orDash = v => (v ?? '') !== '' && v !== 0 ? v : '—'
 
-  // helper para abrir wizard en modo edición
   const openWizard = screenName => {
     navigation
       .getParent()
@@ -63,11 +61,12 @@ export default function ProfileScreen({ navigation }) {
     <ScrollView contentContainerStyle={styles.scroll}>
       {/* Datos básicos */}
       <Section title="📝 Datos básicos" onEdit={() => openWizard('Basic')}>
-        <Row label="Nombre" value={orDash(perfil.nombre)} />
-        <Row label="Edad"   value={orDash(perfil.edad)} />
-        <Row label="Sexo"   value={orDash(perfil.sexo)} />
-        <Row label="Altura" value={orDash(perfil.alturaCm) + ' cm'} />
-        <Row label="Peso"   value={orDash(perfil.pesoKg) + ' kg'} />
+        <Row label="Email"   value={orDash(perfil.email)} />
+        <Row label="Nombre"  value={orDash(perfil.nombre)} />
+        <Row label="Edad"    value={orDash(perfil.edad)} />
+        <Row label="Sexo"    value={orDash(perfil.sexo)} />
+        <Row label="Altura"  value={orDash(perfil.alturaCm) + ' cm'} />
+        <Row label="Peso"    value={orDash(perfil.pesoKg) + ' kg'} />
         <Row label="Empiezas a las" value={orDash(perfil.horaInicioDia)} />
       </Section>
 
@@ -118,7 +117,8 @@ const Row = ({ label, value }) => (
 
 const styles = StyleSheet.create({
   scroll: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 25,
     paddingBottom: 60,
   },
   loaderContainer: {

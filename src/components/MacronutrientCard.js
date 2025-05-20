@@ -1,9 +1,9 @@
 // components/MacronutrientCard.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import AnimatedBar      from './AnimatedBar';
-import CircleFillWave   from './CircleFillWave';
-import { COLORS }       from '../theme/color';
+import AnimatedBar from './AnimatedBar';
+import CircleFillWave from './CircleFillWave';
+import { COLORS } from '../theme/color';
 
 export default function MacronutrientCard({
   totalCalories,
@@ -14,44 +14,55 @@ export default function MacronutrientCard({
   carbsConsumed,
   proteinConsumed,
   fatsConsumed,
-  animationKey = 1,               
+  animationKey = 1,
+  lateralKey = 1
 }) {
-  /* progresos (0-1) */
-  const progressCarbs   = carbsConsumed   / carbsTarget;
+  const progressCarbs = carbsConsumed / carbsTarget;
   const progressProtein = proteinConsumed / proteinTarget;
-  const progressFats    = fatsConsumed    / fatsTarget;
-  const progressTotal   = consumedCalories / totalCalories;
+  const progressFats = fatsConsumed / fatsTarget;
+  const progressTotal = consumedCalories / totalCalories;
 
-  /* si cambian las kcal actualizamos el círculo */
   const [progress, setProgress] = useState(progressTotal);
-  useEffect(() => setProgress(progressTotal), [progressTotal]);
+
+  // Claves independientes para animaciones separadas
+  const [waveKey, setWaveKey] = useState(0);
+  const [barsKey, setBarsKey] = useState(0);
+
+useEffect(() => {
+  setProgress(progressTotal);
+}, [progressTotal]);
+
+useEffect(() => {
+  setProgress(progressTotal);
+}, [progressTotal]);
+
+useEffect(() => {
+  setBarsKey(animationKey);      // se reinicia siempre con la pantalla
+  setWaveKey(animationKey);      // 🔥 también se reinicia con animKey
+}, [animationKey]);
 
   return (
     <View style={styles.cardContainer}>
-      {/* cabecera */}
       <View style={styles.progressContainer}>
         <Text style={styles.caloriasText}>{consumedCalories}</Text>
         <Text style={styles.consumidasText}>Consumidas</Text>
       </View>
 
-      /* círculo con agua (key = animationKey reinicia cuando vuelves al tab) */
       <View style={styles.circleProgressContainer}>
         <CircleFillWave
-          key={animationKey}
+          verticalAnimationKey={animationKey} // para subida de agua
+          lateralAnimationKey={lateralKey}
           progress={progress}
           size={200}
           baseColor={COLORS.primaryBlue}
           fillColor={COLORS.secondaryBlue}
-          waveSpeed={8000}
+          waveSpeed={7000}
         >
-          <Text style={styles.centerNumber}>
-            {totalCalories - consumedCalories}
-          </Text>
+          <Text style={styles.centerNumber}>{totalCalories - consumedCalories}</Text>
           <Text style={styles.centerLabel}>restantes</Text>
         </CircleFillWave>
       </View>
 
-      {/* barras de macronutrientes */}
       <View style={styles.macronutrientsContainer}>
         <View style={styles.macronutrientRow}>
           <Text style={styles.macronutrientText}>Carbohidratos</Text>
@@ -60,9 +71,9 @@ export default function MacronutrientCard({
         </View>
 
         <View style={styles.progressBarRow}>
-          <AnimatedBar value={progressCarbs}   animationKey={animationKey} />
-          <AnimatedBar value={progressProtein} animationKey={animationKey} />
-          <AnimatedBar value={progressFats}    animationKey={animationKey} />
+          <AnimatedBar value={progressCarbs} animationKey={barsKey} />
+          <AnimatedBar value={progressProtein} animationKey={barsKey} />
+          <AnimatedBar value={progressFats} animationKey={barsKey} />
         </View>
 
         <View style={styles.macronutrientRow}>
@@ -75,31 +86,28 @@ export default function MacronutrientCard({
   );
 }
 
-/* ───────── estilos ───────── */
 const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: COLORS.cardBackground,
-    padding: 10,
-    paddingTop: 40,
-    borderRadius: 15,
+    paddingHorizontal: 7,
+    paddingTop:15,
+    borderRadius: 18,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5,
     width: 372,
-    // height: 361,        // ⇠ quítalo si prefieres que se ajuste al contenido
-    margin: 5,
   },
   progressContainer: { marginBottom: 20, alignItems: 'center' },
-  caloriasText:      { fontSize: 25, fontWeight: 'bold', color: COLORS.text },
-  consumidasText:    { fontSize: 15, fontWeight: 'bold', color: COLORS.text },
+  caloriasText: { fontSize: 25, fontWeight: 'bold', color: COLORS.text },
+  consumidasText: { fontSize: 15, fontWeight: 'bold', color: COLORS.text },
   circleProgressContainer: { alignItems: 'center', marginBottom: 20 },
-  centerNumber:      { fontSize: 32, fontWeight: 'bold', color: COLORS.text },
-  centerLabel:       { fontSize: 16, fontWeight: 'bold', color: COLORS.text },
+  centerNumber: { fontSize: 32, fontWeight: 'bold', color: COLORS.text },
+  centerLabel: { fontSize: 16, fontWeight: 'bold', color: COLORS.text },
   macronutrientsContainer: { marginBottom: 20 },
-  macronutrientRow:  { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  macronutrientRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
   macronutrientText: { fontSize: 15, fontWeight: 'bold', color: COLORS.text, width: '30%', textAlign: 'center' },
-  macronutrientValue:{ fontSize: 16, fontWeight: 'bold', color: COLORS.text, width: '30%', textAlign: 'center' },
-  progressBarRow:    { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  macronutrientValue: { fontSize: 16, fontWeight: 'bold', color: COLORS.text, width: '30%', textAlign: 'center' },
+  progressBarRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
 });

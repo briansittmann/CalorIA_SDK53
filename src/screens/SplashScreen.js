@@ -31,5 +31,5 @@ export default function SplashScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  logo: { width: 350, height: 350,marginBottom: 30 },
+  logo: { width: 300, height: 300,marginBottom: 30 },
 });
